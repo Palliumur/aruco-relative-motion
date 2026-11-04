@@ -1,0 +1,13 @@
+ArUco Relative Motion
+Copyright 2026 ArUco Relative Motion contributors.
+
+This project includes an unmodified OpenCV.js binary distributed as
+@techstark/opencv-js, version 4.12.0-release.1.
+
+OpenCV: https://github.com/opencv/opencv
+OpenCV.js package: https://github.com/TechStark/opencv-js
+Both projects are distributed under the Apache License, Version 2.0.
+See LICENSE and dist/vendor/LICENSE-OpenCV.txt.
+
+The original application code is licensed under Apache-2.0.
+No endorsement by the upstream projects is implied.

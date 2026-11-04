@@ -1,0 +1,10 @@
+.DS_Store
+.openai/
+.env
+.env.*
+node_modules/
+work/
+recordings/
+exports/
+*.csv
+*.log

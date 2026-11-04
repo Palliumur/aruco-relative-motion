@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#F1F1F1"><meta name="description" content="使用 OpenCV 实时检测两个 ArUco 标记的相对位置与位移。">
+  <title>相对位移 · ArUco</title><link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<main>
+  <header class="topbar"><a class="brand" href="./" aria-label="相对位移首页"><span class="brand-icon"><i></i></span>相对位移<span class="version">V1.0</span></a><div class="top-actions"><span id="engine-status" class="engine-status"><span class="dot"></span>加载 OpenCV</span><button id="settings-btn" class="icon-button" aria-label="相机设置" title="相机设置">⚙</button></div></header>
+  <section class="workspace">
+    <div class="visual-column">
+      <div class="section-line"><div class="section-title">实时画面<span id="frame-size">—</span></div><div class="toolbar"><button id="demo-btn" class="text-button" disabled>示例模式</button><button id="markers-btn" class="text-button" disabled><span aria-hidden="true">▦</span> 打印标记</button></div></div>
+      <div class="viewport" id="viewport">
+        <canvas id="camera-canvas" aria-label="摄像头画面与标记检测结果"></canvas>
+        <video id="video" autoplay muted playsinline hidden></video>
+        <div id="empty-view" class="empty-view"><div class="viewfinder" aria-hidden="true"><span class="tag-shape one"></span><span class="tag-shape two"></span></div><p>让两个标记同时出现在画面中</p><button id="start-btn" class="button light" disabled>启动摄像头 <span aria-hidden="true">↗</span></button></div>
+        <div class="preview-top"><span id="source-badge" class="preview-badge">摄像头未启动</span><div class="preview-tools"><button id="mirror-btn" class="preview-badge mirror-button" type="button" aria-pressed="true" title="仅翻转预览，不影响检测和测量">镜像 · 开</button><span id="fps" class="preview-badge" hidden></span></div></div>
+        <div class="preview-bottom"><div class="marker-state" id="state-a"><i></i>A · 基准</div><div class="marker-state" id="state-b"><i></i>B · 目标</div><button id="stop-btn" class="stop-button" hidden>停止</button></div>
+      </div>
+      <div id="demo-controls" class="demo-controls" hidden><span>移动 B</span><label>X <input id="demo-x" type="range" min="-40" max="40" step="1" value="0"><output id="demo-x-out">0</output></label><label>Y <input id="demo-y" type="range" min="-30" max="30" step="1" value="0"><output id="demo-y-out">0</output></label><label>Z <input id="demo-z" type="range" min="-40" max="40" step="1" value="0"><output id="demo-z-out">0</output></label><span class="unit">mm</span></div>
+      <div class="capture-bar"><span id="tracking-message" role="status">正在准备检测引擎…</span><button id="camera-btn" class="text-button" disabled>启动摄像头 ↗</button></div>
+      <section class="history"><div class="section-line"><div class="section-title">位移记录<span>最近 30 秒</span></div><span id="history-peak" class="quiet">峰值 —</span></div><div class="chart-wrap"><canvas id="history-chart" aria-label="相对初始基准的三维位移曲线"></canvas><span id="chart-empty">设置基准后开始记录</span></div><div class="chart-axis"><span>−30 s</span><span>现在</span></div></section>
+    </div>
+    <aside class="measurement-column">
+      <section class="displacement"><div class="section-line"><div class="section-title">相对基准位移</div><span id="tracking-badge" class="pill">未连接</span></div><div class="hero-value"><span id="displacement">—</span><span class="hero-unit">mm</span></div><div class="delta-grid"><div><span>ΔX</span><strong id="dx">—</strong></div><div><span>ΔY</span><strong id="dy">—</strong></div><div><span>ΔZ</span><strong id="dz">—</strong></div></div><div class="baseline-actions"><button id="baseline-btn" class="button dark" disabled>设为基准 <span aria-hidden="true">＋</span></button><button id="clear-btn" class="button secondary square" disabled aria-label="清除基准" title="清除基准">↺</button></div><div class="baseline-foot"><span id="baseline-status">尚未设置基准</span><span id="angle-change">旋转 —</span></div></section>
+      <section class="position"><div class="section-line"><div class="section-title">B 相对于 A</div><span class="quiet">mm</span></div><div class="coordinate-row"><span><i class="axis x"></i>X</span><strong id="pos-x">—</strong></div><div class="coordinate-row"><span><i class="axis y"></i>Y</span><strong id="pos-y">—</strong></div><div class="coordinate-row"><span><i class="axis z"></i>Z</span><strong id="pos-z">—</strong></div><div class="coordinate-row distance-row"><span>中心距离</span><strong id="distance">—</strong></div><p class="axis-note">A 标记坐标系 · X 向右 / Y 向上 / Z 向外</p></section>
+      <section class="setup"><div class="section-line"><div class="section-title">测量设置</div><span id="calibration-badge" class="quiet">参数估算</span></div><label class="input-row" for="marker-size"><span>标记边长</span><span class="number-input"><input id="marker-size" type="number" min="10" max="200" step="0.1" value="40" inputmode="decimal"><span>mm</span></span></label><div class="marker-assignments"><span><i class="marker-label">A</i> ID 0 · 基准物体</span><span><i class="marker-label">B</i> ID 1 · 目标物体</span></div><p id="accuracy-note" class="small-note">未标定，毫米值为估算。</p></section>
+      <button id="export-btn" class="export-button" disabled><span>导出记录</span><span>CSV ↓</span></button>
+    </aside>
+  </section>
+  <footer><span>OPENCV · ARUCO DICT_4X4_50</span><span>图像仅在当前浏览器处理</span></footer>
+</main>
+<dialog id="markers-dialog"><div class="dialog-heading"><h2>打印标记</h2><button class="icon-button close-dialog" aria-label="关闭">×</button></div><div class="marker-preview"><figure><img id="marker-a-image" alt="ArUco ID 0"><figcaption>A · 基准 / ID 0</figcaption></figure><figure><img id="marker-b-image" alt="ArUco ID 1"><figcaption>B · 目标 / ID 1</figcaption></figure></div><p class="dialog-note">按 100% 原始尺寸打印，关闭“适合页面”。<br>黑色方框边长 <strong id="print-size">40</strong> mm，打印后请用尺核对。</p><div class="dialog-actions"><button id="download-markers" class="button secondary">下载 SVG</button><button id="print-btn" class="button dark">打印两个标记 ↗</button></div></dialog>
+<dialog id="settings-dialog"><div class="dialog-heading"><h2>相机设置</h2><button class="icon-button close-dialog" aria-label="关闭">×</button></div><label class="field-label" for="camera-select">摄像头</label><select id="camera-select"><option value="">默认摄像头</option></select><div class="settings-rule"></div><div class="section-line"><span>相机标定</span><span id="calibration-status" class="quiet">未导入</span></div><p class="dialog-note">导入当前摄像头的内参 JSON。切换相机、焦距或画面裁切后需重新确认标定。</p><pre>{ "width": 1280, "height": 720,
+  "fx": 1100, "fy": 1100,
+  "cx": 640, "cy": 360,
+  "distortion": [0, 0, 0, 0, 0] }</pre><p class="small-note">以上数值仅说明格式，请使用实际标定结果。</p><div class="dialog-actions"><button id="remove-calibration" class="button secondary" disabled>移除标定</button><button id="import-calibration" class="button dark">导入 JSON ↑</button><input id="calibration-file" type="file" accept=".json,application/json" hidden></div><p id="settings-error" class="error-message" role="alert"></p></dialog>
+<section id="print-sheet" aria-hidden="true"><div class="print-heading">ArUco · DICT_4X4_50</div><div class="print-pair"><figure><img id="print-a" alt="标记 A"><figcaption>A · ID 0</figcaption></figure><figure><img id="print-b" alt="标记 B"><figcaption>B · ID 1</figcaption></figure></div><p>黑色方框边长：<span id="print-mm">40</span> mm</p><div class="print-ruler"></div><p>校验线：100 mm · 打印比例 100%</p></section>
+<div id="toast" class="toast" role="status" hidden></div>
+<script src="./vendor/opencv.js" defer></script><script type="module" src="./app.js"></script>
+</body></html>
