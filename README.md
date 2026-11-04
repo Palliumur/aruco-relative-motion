@@ -62,7 +62,7 @@
 
 ## GitHub Pages 部署
 
-本项目为静态网页，发布目录为 `dist/`，无需安装 npm 依赖或构建。
+本项目为静态网页，发布目录为 `dist/`，无需安装 npm 依赖或前端构建。GitHub Actions 会自动下载并校验固定版本的 OpenCV.js，再将完整运行库与网页一起部署。大型运行库不直接存入 Git 历史。
 
 仓库所有者首次部署时：
 
@@ -77,9 +77,10 @@
 
 ## 本地运行
 
-安装 Python 3 后，在项目根目录运行：
+安装 Node.js 24 和 Python 3 后，在项目根目录运行。第一条命令会下载固定版本的 OpenCV.js；已有文件校验通过时会直接复用：
 
 ```sh
+node scripts/prepare-opencv.mjs
 python3 -m http.server 8765 --bind 127.0.0.1 --directory dist
 ```
 
@@ -90,6 +91,7 @@ python3 -m http.server 8765 --bind 127.0.0.1 --directory dist
 使用 Node.js 24：
 
 ```sh
+node scripts/prepare-opencv.mjs
 node --check dist/app.js
 node --check dist/engine.mjs
 node tests/engine.test.mjs
@@ -103,7 +105,8 @@ dist/
   style.css         样式，背景 #F1F1F1
   app.js            摄像头、预览、交互、打印与 CSV
   engine.mjs        OpenCV 检测、位姿与坐标计算
-  vendor/           固定版本 OpenCV.js 与许可证
+  vendor/           OpenCV 许可证及自动准备的运行库
+scripts/            固定版本运行库下载与校验
 examples/           可打印的默认标记
 tests/              测量引擎测试
 .github/workflows/  自动检查与 Pages 部署

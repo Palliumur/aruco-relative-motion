@@ -8,3 +8,5 @@ recordings/
 exports/
 *.csv
 *.log
+dist/vendor/opencv.js
+dist/vendor/opencv.js.download
